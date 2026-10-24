@@ -19,7 +19,9 @@ export function Shell({ children }: { children: ReactNode }) {
               <span className="sm:hidden">{session.role === 'entry' ? 'مدخل' : 'مشاهد'}</span>
               <span className="hidden sm:inline">{session.role === 'entry' ? 'مدخل البيانات' : 'المشاهد'}</span>
             </span>
-            <span className="hidden max-w-32 truncate text-sm text-muted sm:inline">{session.name}</span>
+            {session.username ? (
+              <span className="hidden max-w-32 truncate text-sm text-muted sm:inline">{session.username}</span>
+            ) : null}
             <button
               type="button"
               onClick={() => void signOut()}

@@ -189,7 +189,7 @@ export const cloudApi: DataApi = {
     const db = supabase
     if (!db) return () => undefined
     const realtime = db
-      .channel('diwan-changes')
+      .channel(`diwan-${crypto.randomUUID()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => cb())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'offices' }, () => cb())
       .subscribe()

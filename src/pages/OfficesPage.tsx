@@ -90,7 +90,7 @@ export function OfficesPage() {
 
       {officesLoading && offices.length === 0 ? <p className="mt-8 text-muted">نحمّل المكاتب...</p> : null}
 
-      {!officesLoading && offices.length === 0 ? (
+      {!officesLoading && offices.length === 0 && !officesError ? (
         <p className="mt-8 rounded-2xl border border-dashed border-line bg-sand px-5 py-8 text-muted">
           {isEntry ? 'ماكو مكاتب بعد. أضف أول مكتب، مثل: علاء الفراشة.' : 'ماكو مكاتب بعد. مدخل البيانات يضيفها.'}
         </p>

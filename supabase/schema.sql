@@ -244,3 +244,18 @@ begin
     when duplicate_object then null;
   end;
 end $$;
+
+insert into public.profiles (id, full_name, role)
+select
+  u.id,
+  coalesce(u.raw_user_meta_data->>'full_name', ''),
+  case
+    when u.raw_user_meta_data->>'role' in ('entry', 'viewer') then u.raw_user_meta_data->>'role'
+    else 'entry'
+  end
+from auth.users u
+on conflict (id) do update
+  set full_name = excluded.full_name,
+      role = excluded.role;
+
+notify pgrst, 'reload schema';
