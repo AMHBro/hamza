@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --color-paper: #f3efe6;
+  --color-sand: #faf7f2;
+  --color-ink: #1a1814;
+  --color-muted: #6f675e;
+  --color-line: #e3dacb;
+  --color-pine: #1e4a38;
+  --color-pine-deep: #16382b;
+  --color-pine-soft: #e5f0ea;
+  --color-new: #2c4a6e;
+  --color-new-soft: #e6eef6;
+  --color-edited: #8a5a1e;
+  --color-edited-soft: #f6ecd9;
+  --color-accepted: #1d6b43;
+  --color-accepted-soft: #e3f3ea;
+  --color-rejected: #8d3530;
+  --color-rejected-soft: #f8e6e4;
+  --color-sheet: #fffdf8;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--color-pine-soft);
+  color: var(--color-ink);
+}
