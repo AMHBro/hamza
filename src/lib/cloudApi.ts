@@ -44,7 +44,7 @@ export const cloudApi: DataApi = {
     const db = client()
     const [officesResult, documentsResult] = await Promise.all([
       db.from('offices').select('id, name, created_at').order('created_at', { ascending: false }),
-      db.from('documents').select('office_id, status'),
+      db.from('documents').select('office_id, status, title, note'),
     ])
     if (officesResult.error) throw new Error(translateError(officesResult.error))
     if (documentsResult.error) throw new Error(translateError(documentsResult.error))
@@ -53,6 +53,8 @@ export const cloudApi: DataApi = {
     const documents = (documentsResult.data ?? []).map((row) => ({
       office_id: String(row.office_id),
       status: isStatus(String(row.status)) ? (row.status as Status) : 'new',
+      title: typeof row.title === 'string' ? row.title : '',
+      note: typeof row.note === 'string' ? row.note : '',
     }))
     return summarizeOffices(offices, documents)
   },
@@ -91,8 +93,9 @@ export const cloudApi: DataApi = {
       const { error: storageError } = await db.storage.from(BUCKET).remove(paths)
       if (storageError) throw new Error(translateError(storageError))
     }
-    const { error } = await db.from('offices').delete().eq('id', id)
+    const { data: removed, error } = await db.from('offices').delete().eq('id', id).select('id')
     if (error) throw new Error(translateError(error))
+    if (!removed?.length) throw new Error('ما انحذف المكتب. تأكد إن الحساب مدخل بيانات وإن الصلاحية محفوظة.')
   },
 
   async listDocuments(officeId) {
@@ -181,8 +184,9 @@ export const cloudApi: DataApi = {
       const { error: storageError } = await db.storage.from(BUCKET).remove([path])
       if (storageError) throw new Error(translateError(storageError))
     }
-    const { error } = await db.from('documents').delete().eq('id', id)
+    const { data: removed, error } = await db.from('documents').delete().eq('id', id).select('id')
     if (error) throw new Error(translateError(error))
+    if (!removed?.length) throw new Error('ما انحذفت الصورة. تأكد إن الحساب مدخل بيانات وإن الصلاحية محفوظة.')
   },
 
   subscribe(cb) {

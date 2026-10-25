@@ -3,11 +3,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Lightbox } from '../components/Lightbox'
 import { Modal } from '../components/Modal'
+import { SearchField } from '../components/SearchField'
 import { StatusBadge } from '../components/StatusBadge'
 import { StudioModal } from '../components/StudioModal'
 import { useApp } from '../context/AppState'
 import { api } from '../lib/api'
 import { arNum, formatArabicDate } from '../lib/format'
+import { includesQuery, normalizeSearch } from '../lib/search'
 import type { DocumentItem, Status } from '../types'
 
 const filters: { id: Status | 'all'; label: string }[] = [
@@ -27,6 +29,7 @@ export function OfficePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<Status | 'all'>('all')
+  const [query, setQuery] = useState('')
   const [studio, setStudio] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
   const [confirmOffice, setConfirmOffice] = useState(false)
@@ -69,7 +72,10 @@ export function OfficePage() {
 
   if (!session) return null
 
-  const visible = docs.filter((doc) => filter === 'all' || doc.status === filter)
+  const searching = normalizeSearch(query).length > 0
+  const visible = docs.filter(
+    (doc) => (filter === 'all' || doc.status === filter) && includesQuery(`${doc.title} ${doc.note}`, query),
+  )
   const openIndex = visible.findIndex((doc) => doc.id === openId)
   const isEntry = session.role === 'entry'
 
@@ -104,7 +110,9 @@ export function OfficePage() {
     const nextDocs = await api.listDocuments(officeId)
     setDocs(nextDocs)
     await refreshOffices()
-    const nextVisible = nextDocs.filter((doc) => filter === 'all' || doc.status === filter)
+    const nextVisible = nextDocs.filter(
+      (doc) => (filter === 'all' || doc.status === filter) && includesQuery(`${doc.title} ${doc.note}`, query),
+    )
     const neighbor = nextVisible[removedAt] ?? nextVisible[removedAt - 1]
     setOpenId(neighbor?.id ?? null)
   }
@@ -178,6 +186,12 @@ export function OfficePage() {
         ) : null}
       </div>
 
+      {docs.length > 0 ? (
+        <div className="mt-5 max-w-xl">
+          <SearchField value={query} onChange={setQuery} placeholder="ابحث باسم الصورة أو الملاحظة" />
+        </div>
+      ) : null}
+
       <div className="mt-5 flex flex-wrap gap-2">
         {filters.map((item) => {
           const count = item.id === 'all' ? docs.length : docs.filter((doc) => doc.status === item.id).length
@@ -205,7 +219,7 @@ export function OfficePage() {
       ) : null}
 
       {!loading && docs.length > 0 && visible.length === 0 ? (
-        <p className="mt-8 text-muted">ماكو صور بهالحالة.</p>
+        <p className="mt-8 text-muted">{searching ? 'ماكو صور تطابق البحث.' : 'ماكو صور بهالحالة.'}</p>
       ) : null}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -230,7 +244,11 @@ export function OfficePage() {
       </div>
 
       {isEntry ? (
-        <button type="button" onClick={() => setConfirmOffice(true)} className="mt-10 text-sm text-rejected">
+        <button
+          type="button"
+          onClick={() => setConfirmOffice(true)}
+          className="mt-10 min-h-11 rounded-xl border border-rejected/30 bg-rejected-soft px-4 text-sm text-rejected"
+        >
           حذف المكتب
         </button>
       ) : null}
@@ -296,7 +314,7 @@ export function OfficePage() {
               type="button"
               onClick={() => void removeOffice()}
               disabled={deletingOffice}
-              className="rounded-xl bg-rejected px-4 py-2.5 text-sand disabled:opacity-60"
+              className="min-h-11 rounded-xl bg-rejected px-4 text-sand disabled:opacity-60"
             >
               {deletingOffice ? 'نحذف...' : 'حذف المكتب'}
             </button>

@@ -217,7 +217,7 @@ export const localApi: DataApi = {
     await ensureSeed()
     const [offices, documents] = await Promise.all([
       getAll<Office>('offices'),
-      getAll<Pick<DocumentItem, 'office_id' | 'status'>>('documents'),
+      getAll<Pick<DocumentItem, 'office_id' | 'status' | 'title' | 'note'>>('documents'),
     ])
     return summarizeOffices(offices, documents)
   },

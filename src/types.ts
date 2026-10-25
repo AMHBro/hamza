@@ -13,6 +13,7 @@ export type Office = {
 export type OfficeSummary = Office & {
   total: number
   byStatus: Record<Status, number>
+  searchText: string
 }
 
 export type DocumentItem = {

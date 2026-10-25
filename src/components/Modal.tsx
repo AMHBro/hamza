@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 export function Modal({
   title,
@@ -12,6 +12,8 @@ export function Modal({
   onClose: () => void
   children: ReactNode
 }) {
+  const openedAt = useRef(Date.now())
+
   useEffect(() => {
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -26,7 +28,13 @@ export function Modal({
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 sm:items-center sm:p-6" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 sm:items-center sm:p-6"
+      onClick={() => {
+        if (Date.now() - openedAt.current < 400) return
+        onClose()
+      }}
+    >
       <div
         role="dialog"
         aria-modal="true"

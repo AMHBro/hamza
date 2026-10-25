@@ -236,7 +236,7 @@ export function Lightbox({
                       </div>
                     </div>
                   ) : (
-                    <button type="button" onClick={() => setConfirmDelete(true)} className="text-sm text-rejected">
+                    <button type="button" onClick={() => setConfirmDelete(true)} className="min-h-11 w-full rounded-xl text-sm text-rejected">
                       حذف الصورة
                     </button>
                   )}

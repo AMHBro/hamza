@@ -1,8 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Modal } from '../components/Modal'
+import { SearchField } from '../components/SearchField'
 import { useApp } from '../context/AppState'
 import { api } from '../lib/api'
+import { includesQuery } from '../lib/search'
 import { arNum, formatArabicDate } from '../lib/format'
 import { isCloud } from '../lib/supabaseClient'
 import { STATUS_META } from '../lib/status'
@@ -23,6 +25,7 @@ export function OfficesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [query, setQuery] = useState('')
   const [hideTip, setHideTip] = useState(() => sessionStorage.getItem('diwan-hide-tip') === '1')
 
   useEffect(() => {
@@ -32,6 +35,7 @@ export function OfficesPage() {
   if (!session) return null
   const isEntry = session.role === 'entry'
   const deleting = offices.find((office) => office.id === deletingId)
+  const shown = offices.filter((office) => includesQuery(office.searchText, query))
 
   async function createOffice(event: FormEvent) {
     event.preventDefault()
@@ -86,6 +90,12 @@ export function OfficesPage() {
         </div>
       ) : null}
 
+      {offices.length > 0 ? (
+        <div className="mt-5 max-w-xl">
+          <SearchField value={query} onChange={setQuery} placeholder="ابحث باسم المكتب أو الصورة أو الملاحظة" />
+        </div>
+      ) : null}
+
       {officesError ? <p className="mt-4 text-sm text-rejected">{officesError}</p> : null}
 
       {officesLoading && offices.length === 0 ? <p className="mt-8 text-muted">نحمّل المكاتب...</p> : null}
@@ -96,8 +106,12 @@ export function OfficesPage() {
         </p>
       ) : null}
 
+      {!officesLoading && offices.length > 0 && shown.length === 0 ? (
+        <p className="mt-8 rounded-2xl border border-dashed border-line bg-sand px-5 py-8 text-muted">ماكو مكتب يطابق البحث.</p>
+      ) : null}
+
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {offices.map((office) => (
+        {shown.map((office) => (
           <article key={office.id} className="rounded-2xl border border-line bg-sand hover:border-pine">
             <Link to={`/offices/${office.id}`} className="block p-5">
               <span className="flex items-start justify-between gap-3">
@@ -117,7 +131,7 @@ export function OfficesPage() {
               </span>
             </Link>
             {isEntry ? (
-              <div className="flex gap-2 border-t border-line px-5 py-3">
+              <div className="flex gap-2 border-t border-line px-4 py-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -125,7 +139,7 @@ export function OfficesPage() {
                     setEditName(office.name)
                     setError(null)
                   }}
-                  className="rounded-lg border border-line bg-sheet px-3 py-1.5 text-sm"
+                  className="min-h-11 flex-1 rounded-xl border border-line bg-sheet px-3 text-sm"
                 >
                   تعديل
                 </button>
@@ -135,7 +149,7 @@ export function OfficesPage() {
                     setDeletingId(office.id)
                     setError(null)
                   }}
-                  className="rounded-lg px-3 py-1.5 text-sm text-rejected"
+                  className="min-h-11 flex-1 rounded-xl border border-rejected/30 bg-rejected-soft px-3 text-sm text-rejected"
                 >
                   حذف
                 </button>
@@ -223,7 +237,7 @@ export function OfficesPage() {
                   .catch((deleteError) => setError(deleteError instanceof Error ? deleteError.message : 'تعذر حذف المكتب.'))
                   .finally(() => setBusy(false))
               }}
-              className="rounded-xl bg-rejected px-4 py-2.5 text-sand disabled:opacity-60"
+              className="min-h-11 rounded-xl bg-rejected px-4 text-sand disabled:opacity-60"
             >
               {busy ? 'نحذف...' : 'حذف المكتب'}
             </button>
